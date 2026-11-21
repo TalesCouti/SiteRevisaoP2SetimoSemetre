@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BookOpen, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Code2, Database, FileCode2, GraduationCap, Layers3, Lightbulb, ListChecks, Menu, Play, RotateCcw, Search, Sparkles, Target, X, XCircle } from 'lucide-react';
+import { BookOpen, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Code2, Cpu, Database, FileCode2, GraduationCap, Layers3, Lightbulb, ListChecks, Menu, Play, RotateCcw, Search, Sparkles, Target, X, XCircle } from 'lucide-react';
 import { courses, getQuestions } from './data';
 import './style.css';
 
-const courseFromHash = () => location.hash.includes('linguagens') ? 'linguagens' : 'compiladores';
+const courseFromHash = () => location.hash.includes('embarcados') ? 'embarcados' : location.hash.includes('linguagens') ? 'linguagens' : 'compiladores';
 
 function App() {
   const [courseKey, setCourseKey] = useState(courseFromHash);
@@ -57,6 +57,7 @@ function App() {
       <nav className="course-nav" aria-label="Matérias">
         <button className={courseKey === 'compiladores' ? 'active' : ''} onClick={() => switchCourse('compiladores')}><span className="nav-icon"><Layers3 size={19}/></span><span>Compiladores<small>7 tópicos de revisão</small></span></button>
         <button className={courseKey === 'linguagens' ? 'active' : ''} onClick={() => switchCourse('linguagens')}><span className="nav-icon"><FileCode2 size={19}/></span><span>Linguagens de<br/>Programação<small>Baseado na sua prova</small></span></button>
+        <button className={courseKey === 'embarcados' ? 'active' : ''} onClick={() => switchCourse('embarcados')}><span className="nav-icon"><Cpu size={19}/></span><span>Sistemas Embarcados<small>Carro e Simon Says</small></span></button>
       </nav>
       <div className="sidebar-divider"/>
       <div className="sidebar-label">NESTA MATÉRIA</div>
@@ -69,7 +70,7 @@ function App() {
     </aside>
     {mobileMenu && <button className="scrim" onClick={() => setMobileMenu(false)} aria-label="Fechar menu"/>}
     <main className="main">
-      <header className="topbar"><button className="menu-button" onClick={() => setMobileMenu(true)} aria-label="Abrir menu"><Menu size={22}/></button><div className="crumb">Área de estudo <ChevronRight size={15}/> <strong>{course.title}</strong></div><div className="topbar-right"><span className="course-tag"><span/> {courseKey === 'compiladores' ? 'COMPILADORES' : 'LINGUAGENS'}</span><span className="avatar">CL</span></div></header>
+      <header className="topbar"><button className="menu-button" onClick={() => setMobileMenu(true)} aria-label="Abrir menu"><Menu size={22}/></button><div className="crumb">Área de estudo <ChevronRight size={15}/> <strong>{course.title}</strong></div><div className="topbar-right"><span className="course-tag"><span/> {courseKey === 'compiladores' ? 'COMPILADORES' : courseKey === 'linguagens' ? 'LINGUAGENS' : 'EMBARCADOS'}</span><span className="avatar">CL</span></div></header>
       <div className="content">
         {tab === 'visao' && <>
           <section className="hero"><div className="hero-content"><div className="eyebrow"><Sparkles size={15}/> {course.eyebrow}</div><h1>Domine <em>{course.title}.</em><br/><span>Uma questão de cada vez.</span></h1><p>{course.description}</p><div className="hero-actions"><button className="primary-button" onClick={() => openTopic(course.topics[0].id)}><BookOpen size={18}/> Começar revisão</button><button className="ghost-button" onClick={() => startQuiz()}><Play size={17} fill="currentColor"/> Praticar questões</button></div></div><div className="hero-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/><div className="code-card"><div className="code-dots"><i/><i/><i/></div><div><span>function</span> estudar() {'{'}</div><div className="code-indent"><span>const</span> foco = <b>true</b>;</div><div className="code-indent">return <strong>"aprovado"</strong>;</div><div>{'}'}</div></div><div className="art-chip"><Check size={16}/> aprendizado.exe</div></div></section>
@@ -77,7 +78,7 @@ function App() {
           <div className="section-heading"><div><span className="kicker">SEU ROTEIRO</span><h2>O que vamos estudar</h2><p>Escolha um tema para ver teoria, exemplos e pontos importantes para a prova.</p></div><div className="search"><Search size={18}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar tópico..." aria-label="Buscar tópico"/></div></div>
           <div className="topic-grid">{visibleTopics.map((t, i) => <button className="topic-card" key={t.id} onClick={() => openTopic(t.id)}><div className="card-top"><span className={`topic-icon tone-${i % 4}`}><TopicIcon i={i}/></span><span className="topic-number">{t.icon}</span></div><h3>{t.title}</h3><p>{t.short}</p><div className="card-bottom"><span><BookOpen size={15}/> {t.points.length} conceitos</span><span>{t.time} <ChevronRight size={17}/></span></div></button>)}</div>
           {visibleTopics.length === 0 && <p className="empty">Nenhum tópico encontrado. Tente outro termo.</p>}
-          <section className="study-banner"><div className="banner-symbol"><Lightbulb size={26}/></div><div><strong>{courseKey === 'linguagens' ? 'Estudo guiado pela devolutiva' : 'Prática que fixa o conteúdo'}</strong><p>{courseKey === 'linguagens' ? 'As questões discursivas da prova viraram revisão objetiva e exercícios de múltipla escolha.' : 'Depois da teoria, teste seu entendimento e veja por que cada resposta está certa.'}</p></div><button onClick={() => startQuiz()}>Ir para questões <ChevronRight size={18}/></button></section>
+          <section className="study-banner"><div className="banner-symbol"><Lightbulb size={26}/></div><div><strong>{courseKey === 'linguagens' ? 'Estudo guiado pela devolutiva' : courseKey === 'embarcados' ? 'Do circuito ao código' : 'Prática que fixa o conteúdo'}</strong><p>{courseKey === 'linguagens' ? 'As questões discursivas da prova viraram revisão objetiva e exercícios de múltipla escolha.' : courseKey === 'embarcados' ? 'Compare os dois projetos enviados, entenda os componentes e pratique a lógica que controla cada circuito.' : 'Depois da teoria, teste seu entendimento e veja por que cada resposta está certa.'}</p></div><button onClick={() => startQuiz()}>Ir para questões <ChevronRight size={18}/></button></section>
         </>}
         {tab === 'conteudo' && selectedTopic && <>
           <button className="back-link" onClick={() => { setTab('visao'); setTopicId(null); }}><ChevronLeft size={18}/> Voltar aos tópicos</button>

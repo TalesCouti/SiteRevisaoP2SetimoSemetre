@@ -1,0 +1,122 @@
+export const embeddedCourse = {
+  title: 'Sistemas Embarcados',
+  eyebrow: 'REVISÃO • CARRO E SIMON SAYS',
+  description: 'Aprenda os fundamentos de GPIO, leitura analógica, PWM, motores, temporização e lógica de estados com base nos dois projetos enviados.',
+  accent: 'blue',
+  topics: [
+    { id: 'arquitetura', title: 'Arquitetura embarcada', short: 'Entradas, controle e saídas', icon: '01', time: '10 min',
+      summary: 'Um sistema embarcado combina hardware e software para cumprir uma função definida. Nos projetos, o microcontrolador lê entradas, toma decisões e aciona saídas físicas.',
+      points: [
+        ['Fluxo do sistema', 'No carro: joystick e botão → ESP32-S3 → L298N, motores e buzzer. No Simon Says: botões → ESP32 → LEDs e buzzer. O programa implementa a lógica de controle.'],
+        ['Microcontrolador', 'Integra processador, memória e periféricos de entrada/saída. GPIO, ADC e PWM permitem interagir com sensores, botões, LEDs e atuadores.'],
+        ['setup() e loop()', 'Em Arduino/C++, setup() configura pinos e periféricos uma vez; loop() executa repetidamente a lógica principal. Funções auxiliares separam comportamentos.'],
+        ['Tempo real e previsibilidade', 'O sistema precisa reagir dentro de um prazo útil. Bloqueios longos com delay() ou laços mal planejados podem atrasar leituras e ações.'],
+        ['Placas diferentes', 'O PDF do carro cita Arduino UNO e ESP32-S3, mas o código usa GPIO e LEDC do ESP32-S3. A placa real e a versão do framework devem ser confirmadas antes de compilar e ligar.']
+      ], example: 'entrada → leitura → decisão → atuação\njoystick → analogRead() → if/else → L298N → motores',
+      takeaway: 'Separe claramente entrada, processamento e saída. Um pino configurado para uma placa pode não existir ou não ter a mesma função em outra.' },
+    { id: 'gpio', title: 'GPIO, LEDs e botões', short: 'Entradas digitais e níveis lógicos', icon: '02', time: '12 min',
+      summary: 'GPIO é um pino digital configurável como entrada ou saída. A lógica depende da ligação elétrica: o mesmo botão pode ser ativo em HIGH ou em LOW.',
+      points: [
+        ['pinMode e digitalRead', 'pinMode(pino, INPUT/OUTPUT/INPUT_PULLUP) define o modo. digitalRead() lê HIGH ou LOW; digitalWrite() define o nível de uma saída.'],
+        ['Pull-up e botão ativo em LOW', 'No Simon Says, resistores externos de 10 kΩ ligam as entradas a 3,3 V e cada botão as conecta ao GND ao pressionar. Solto = HIGH; pressionado = LOW. O código usa INPUT, pois o pull-up é externo.'],
+        ['LED e resistor em série', 'Os quatro LEDs do Simon Says usam resistores de 220 Ω em série. O resistor limita corrente; sem ele, LED ou GPIO podem ser danificados.'],
+        ['Mapeamento do Simon Says', 'Botões: GPIO 12, 13, 14, 27. LEDs: GPIO 4, 16, 17, 5. Buzzer: GPIO 2. Os índices 0 a 3 ligam cada botão ao LED e tom correspondente.'],
+        ['Bounce e leitura', 'Contato mecânico pode oscilar ao pressionar. Debounce por tempo ou detecção de borda evita múltiplas leituras de um único toque.']
+      ], example: 'if (digitalRead(button[0]) == LOW) { return 0; }\n// Com pull-up, LOW significa botão pressionado.',
+      takeaway: 'Antes de decorar HIGH ou LOW, desenhe o caminho elétrico da entrada em repouso e durante o acionamento.' },
+    { id: 'adc', title: 'ADC e joystick analógico', short: 'Amostragem e limiares', icon: '03', time: '12 min',
+      summary: 'O joystick produz tensões variáveis em dois eixos. O ADC converte essas tensões em números para o software comparar com faixas de decisão.',
+      points: [
+        ['Leitura analógica', 'No código do carro, analogReadResolution(12) configura uma escala de 0 a 4095 e analogRead(VERT/HORZ) lê os eixos. O centro fica aproximadamente no meio da faixa, sujeito a calibração.'],
+        ['Zona morta', 'O código usa 1500 e 2500 como limiares. Entre eles, considera o eixo próximo do centro. Essa zona reduz movimentos involuntários por ruído.'],
+        ['Prioridade do if/else', 'A lógica testa VERT primeiro. Se o eixo vertical ultrapassar um limiar, o ramo horizontal não é avaliado; curvas só ocorrem quando VERT está na zona central.'],
+        ['Calibração e filtragem', 'Centro e extremos reais variam. Amostras médias, histerese e calibração podem estabilizar o comando e reduzir alternância rápida perto de um limiar.'],
+        ['Tensão de entrada', 'A saída do joystick deve respeitar a faixa elétrica aceita pelo ADC da placa. Não presuma que um sinal alimentado em 5 V possa ser ligado diretamente a um GPIO de 3,3 V.']
+      ], example: 'if (vert > 2500) frente;\nelse if (vert < 1500) ré;\nelse if (horz > 2500) direita;\nelse if (horz < 1500) esquerda;\nelse parar;',
+      takeaway: 'Resolução do ADC define a escala numérica; tensão admissível e calibração são questões elétricas separadas.' },
+    { id: 'motor', title: 'Ponte H e motores DC', short: 'L298N, sentido e parada', icon: '04', time: '13 min',
+      summary: 'O L298N é um driver com duas pontes H. Ele permite inverter a polaridade aplicada aos motores e controlá-los sem exigir que o GPIO forneça a corrente do motor.',
+      points: [
+        ['Entradas e saídas', 'IN1/IN2 comandam o sentido do motor A; IN3/IN4, do motor B. OUT1/OUT2 e OUT3/OUT4 vão aos terminais dos motores. ENA e ENB habilitam os canais.'],
+        ['Sentido de rotação', 'No código do carro, HIGH/LOW em cada par com enable ativo produz um sentido; LOW/HIGH inverte. A orientação física da roda pode trocar o nome “frente”/“ré”.'],
+        ['Curvas no exemplo', 'turnRight() mantém o motor esquerdo acionado e para o direito; turnLeft() faz o oposto. Isso gera uma curva pela diferença de velocidade entre as rodas.'],
+        ['Parada', 'stopMotors() coloca entradas de direção em LOW e duty de ENA/ENB em zero. Distinga desligar/coastar de frear eletricamente: o comportamento depende do estado das entradas do driver.'],
+        ['Alimentação real', 'Motor, lógica e microcontrolador podem ter requisitos distintos. O L298 apresenta queda de tensão interna: uma fonte de 5 V não garante 5 V nos terminais do motor. Verifique corrente, tensão e aquecimento.']
+      ], example: 'IN1=HIGH, IN2=LOW, ENA=PWM → motor A em um sentido.\nIN1=LOW, IN2=HIGH, ENA=PWM → sentido oposto.',
+      takeaway: 'O GPIO controla sinais de comando; a corrente do motor passa pelo driver e pela fonte apropriada.' },
+    { id: 'pwm', title: 'PWM e buzzer', short: 'Duty cycle e frequência', icon: '05', time: '11 min',
+      summary: 'PWM alterna uma saída digital rapidamente. O duty cycle indica a fração do período em HIGH; frequência e duty cumprem papéis diferentes.',
+      points: [
+        ['Duty cycle', 'Em resolução de 8 bits, valores de 0 a 255 representam aproximadamente 0% a 100% de duty. No carro, ledcWrite(ENA/ENB, 255) usa comando máximo e 0 desliga o canal.'],
+        ['Frequência', 'O projeto do carro configura PWM dos motores a 5 kHz. A frequência define quantos ciclos ocorrem por segundo; mudar apenas o duty altera o comando médio sem necessariamente mudar a frequência.'],
+        ['Buzzer passivo', 'Precisa de oscilação para produzir som. No carro, o código configura 440 Hz e usa duty 128 para o beep; no Simon Says, tone() escolhe frequências diferentes para cada cor.'],
+        ['Tom versus intensidade', 'Frequência está ligada à altura do tom; duty altera o tempo ativo em cada período. Um valor de duty 128 em 8 bits é aproximadamente metade do período.'],
+        ['API e placa', 'O exemplo do carro usa ledcAttach()/ledcWrite() do ambiente ESP32. Confira se as funções e assinatura correspondem à versão do core instalada.']
+      ], example: 'ledcAttach(ENA, 5000, 8);\nledcWrite(ENA, 128); // cerca de 50% de duty em 8 bits',
+      takeaway: 'ADC mede uma entrada analógica; PWM comanda uma saída digital pulsada. Não confunda resolução, frequência e duty.' },
+    { id: 'tempo', title: 'Temporização e estados', short: 'millis(), timeout e delay()', icon: '06', time: '12 min',
+      summary: 'O programa precisa saber em qual etapa está e controlar prazos. No Simon Says, a rodada, a sequência esperada e o tempo de resposta formam o estado do jogo.',
+      points: [
+        ['Estado do jogo', 'gameStarted indica se há partida; roundCounter informa a rodada; buttonSequence[] guarda a ordem; pressedButton representa a leitura atual.'],
+        ['Timeout com millis()', 'Antes de cada resposta, startTime = millis(). A condição millis() - startTime > timeLimit detecta demora acima de 2000 ms. A subtração com unsigned long é a forma usual para intervalos curtos.'],
+        ['delay() bloqueante', 'delay() pausa o fluxo principal. O projeto o usa para LEDs, sons e estabilidade; em aplicações que precisam reagir ao mesmo tempo a vários eventos, prefira agendamento não bloqueante com millis().'],
+        ['return no loop()', 'Quando o jogador erra ou o tempo acaba, loseSequence() altera o estado e return encerra apenas a chamada atual de loop(); o framework chamará loop() novamente.'],
+        ['Tamanho da sequência', 'O vetor possui 15 posições e roundsToWin vale 5 no exemplo. Se o número de rodadas aumentar, a lógica precisa garantir que nunca escreva ou leia além do tamanho do vetor.']
+      ], example: 'unsigned long inicio = millis();\nif (millis() - inicio > 2000) { loseSequence(); return; }',
+      takeaway: 'Timeout é uma condição temporal; estado é a memória do que já aconteceu e do que deve acontecer em seguida.' },
+    { id: 'simon', title: 'Simon Says: algoritmo', short: 'Sequência, rodada e validação', icon: '07', time: '14 min',
+      summary: 'O jogo gera uma sequência de cores, apresenta um prefixo crescente e exige que o jogador repita cada passo na ordem correta dentro do tempo.',
+      points: [
+        ['Geração', 'startSequence() inicializa uma semente e preenche buttonSequence com índices 0 a 3. No exemplo, roundsToWin = 5.'],
+        ['Apresentação do prefixo', 'O for usa i <= roundCounter. Com roundCounter = 0, mostra 1 item; na rodada seguinte mostra 2; e assim por diante.'],
+        ['Validação', 'Para cada elemento mostrado, buttonCheck() devolve 0 a 3 quando há botão pressionado ou 4 quando não há. A comparação com buttonSequence[i] decide se avança ou perde.'],
+        ['Som e LED associados', 'flashLED(indice) acende led[indice] e chama tone() com tones[indice]. allLEDoff() apaga os quatro LEDs e chama noTone().'],
+        ['Vitória e reinício', 'Após validar o prefixo, roundCounter cresce. Ao alcançar roundsToWin, winSequence() celebra e põe gameStarted = false; o próximo loop inicia outra partida.']
+      ], example: 'Sequência: [vermelho, azul, verde]\nRodada 1: vermelho\nRodada 2: vermelho → azul\nRodada 3: vermelho → azul → verde',
+      takeaway: 'O jogo verifica ordem, não apenas quais cores foram pressionadas. i <= roundCounter explica por que a primeira rodada tem um elemento.' },
+    { id: 'projeto', title: 'Montagem e depuração', short: 'Leia o esquema criticamente', icon: '08', time: '12 min',
+      summary: 'Uma documentação de projeto é ponto de partida, mas pinos, níveis de tensão e alimentação precisam ser confrontados com a placa real e os datasheets.',
+      points: [
+        ['GND comum', 'Sinais entre microcontrolador, driver, joystick e fonte precisam compartilhar referência de terra, respeitando o projeto elétrico. GND comum não significa unir fontes incompatíveis sem análise.'],
+        ['Confirme a placa', 'O carro alterna menções a UNO e ESP32-S3; o código usa recursos específicos de ESP32. O Simon Says usa ESP32 DevKit C. Não transfira pinagem ou alimentação de uma placa para outra automaticamente.'],
+        ['Cheque níveis de tensão', 'Antes de energizar, confirme tensão de alimentação do módulo e nível máximo de cada entrada. O desenho do carro coloca joystick de 5 V em entradas do ESP32-S3: isso exige revisão elétrica.'],
+        ['Teste por etapas', 'Valide alimentação e GND, depois cada botão/LED, leituras analógicas, PWM sem carga e, por fim, motores. Registre leituras seriais para diagnosticar limiares.'],
+        ['Falhas típicas', 'LED invertido, ausência de resistor, botão flutuante, pinagem divergente, eixo invertido, motor com corrente insuficiente e uso de API incompatível são causas frequentes.']
+      ], example: 'Checklist: placa correta → tensão dos pinos → GND comum → GPIO mapeado → teste unitário → integração.',
+      takeaway: 'Uma simulação funcional não substitui a checagem elétrica antes de montar o circuito físico.' }
+  ],
+  questions: [
+    ['arquitetura','No carro, qual sequência representa o fluxo principal de controle?',['Motor → joystick → ESP32','Joystick → ESP32-S3 → L298N → motor','L298N → joystick → buzzer','Fonte → LED → compilador'],1,'O joystick é a entrada, o ESP32-S3 decide, o L298N aciona os motores.'],
+    ['arquitetura','Qual função Arduino é chamada repetidamente após a inicialização?',['setup()','pinMode()','loop()','main()'],2,'setup() configura o sistema; o framework executa loop() continuamente.'],
+    ['arquitetura','Qual inconsistência da documentação do carro precisa ser resolvida antes de montar?',['Duas cores de LED','Referências a Arduino UNO e ESP32-S3 para a mesma central','Dois motores DC','Um joystick com dois eixos'],1,'O texto alterna UNO e ESP32-S3, enquanto o código usa funções específicas do ESP32.'],
+    ['arquitetura','Qual item é um atuador nos projetos?',['Joystick','Botão','Motor DC','ADC'],2,'Motor transforma comando elétrico em movimento; joystick e botão são entradas.'],
+    ['gpio','No Simon Says, com pull-up externo de 10 kΩ, um botão pressionado é lido como:',['HIGH','LOW','Valor entre 0 e 4095','PWM'],1,'O resistor mantém HIGH em repouso; o botão fecha o caminho ao GND e a entrada passa a LOW.'],
+    ['gpio','Qual função configura um GPIO como entrada ou saída?',['digitalRead()','pinMode()','tone()','analogRead()'],1,'pinMode() define INPUT, OUTPUT ou outro modo suportado.'],
+    ['gpio','Por que há resistores de 220 Ω em série com os LEDs do Simon Says?',['Para gerar números aleatórios','Para limitar a corrente','Para aumentar a tensão a 5 V','Para armazenar o estado'],1,'O resistor limita a corrente pelo LED e pelo GPIO.'],
+    ['gpio','No código do Simon Says, buttonCheck() retorna 4 quando:',['O botão amarelo é pressionado','Nenhum botão está pressionado','A rodada terminou','O buzzer está ligado'],1,'Os índices válidos dos quatro botões são 0 a 3; 4 é o sentinela “nenhum botão”.'],
+    ['adc','Com analogReadResolution(12), a escala numérica configurada no exemplo do carro é:',['0 a 255','0 a 1023','0 a 4095','0 a 65535'],2,'Doze bits representam 2^12 = 4096 níveis, numerados de 0 a 4095.'],
+    ['adc','Qual é a função da faixa entre 1500 e 2500 no código do joystick?',['Forçar velocidade máxima','Criar zona morta próxima do centro','Medir a frequência PWM','Acionar os dois motores em ré'],1,'Valores próximos do centro não disparam comandos, reduzindo efeito de ruído e pequenas variações.'],
+    ['adc','Se VERT vale 3000 e HORZ vale 1000, qual ação o if/else do carro escolhe?',['Esquerda','Direita','Frente','Parar'],2,'O teste vertical vem primeiro; VERT > 2500 chama moveForward() e impede avaliação do ramo horizontal.'],
+    ['adc','Antes de conectar um joystick alimentado em 5 V a um ADC de placa de 3,3 V, é necessário:',['Ignorar a diferença','Verificar a tensão máxima do pino e adaptar o sinal se preciso','Aumentar o PWM','Remover o GND'],1,'O sinal de saída pode exceder o limite aceito pela entrada; a compatibilidade elétrica deve ser conferida.'],
+    ['motor','Qual componente do carro fornece a corrente de acionamento aos motores sob comando do ESP32?',['ADC','L298N','Joystick','Buzzer'],1,'O L298N é o driver de potência entre sinais GPIO e motores.'],
+    ['motor','No canal A da ponte H, trocar IN1/IN2 de HIGH/LOW para LOW/HIGH tende a:',['Inverter o sentido de rotação','Aumentar a resolução do ADC','Mudar a frequência do buzzer','Desligar o microcontrolador'],0,'A inversão das entradas inverte a polaridade aplicada ao motor pelo driver.'],
+    ['motor','No exemplo, turnRight() faz o quê?',['Aciona apenas o motor esquerdo','Aciona apenas o motor direito','Inverte os dois motores','Aciona o buzzer'],0,'O código mantém ENA em 255 e ENB em 0, movendo o lado esquerdo.'],
+    ['motor','Por que não se deve assumir que fonte de 5 V entrega 5 V aos terminais do motor via L298N?',['O ADC converte a tensão','O driver apresenta queda de tensão interna','O joystick muda o GND','O PWM sempre dobra a tensão'],1,'Há perdas internas no driver; tensão e corrente efetivas devem ser verificadas para o motor.'],
+    ['pwm','Em PWM de 8 bits, qual valor representa duty aproximadamente máximo?',['0','128','255','4095'],2,'A faixa de 8 bits vai de 0 a 255; 255 corresponde ao comando máximo.'],
+    ['pwm','No código do carro, a frequência do PWM dos motores é:',['440 Hz','2 kHz','5 kHz','12 kHz'],2,'freqPWM é definido como 5000, ou 5 kHz.'],
+    ['pwm','Um buzzer passivo precisa principalmente de:',['Sinal oscilante','Somente tensão DC constante','Entrada analógica','Motor com engrenagem'],0,'A oscilação periódica produz a vibração e o som; o tom depende da frequência.'],
+    ['pwm','Qual par associa corretamente API e finalidade no projeto do carro?',['analogRead → saída PWM','ledcWrite → duty da saída PWM','pinMode → leitura ADC','digitalRead → frequência sonora'],1,'ledcWrite() define o duty da saída PWM configurada no exemplo.'],
+    ['tempo','No Simon Says, o timeout de resposta é de:',['150 ms','500 ms','2000 ms','15 s'],2,'timeLimit vale 2000 milissegundos e é comparado ao tempo transcorrido desde startTime.'],
+    ['tempo','Por que usar millis() - startTime para verificar timeout?',['Para contar LEDs','Para comparar tempo decorrido sem bloquear a leitura','Para mudar a tensão do GPIO','Para gerar o tom'],1,'A subtração calcula o intervalo desde o começo da espera; o programa continua lendo o botão.'],
+    ['tempo','Qual é uma limitação de delay() em sistemas que precisam responder a vários eventos?',['Aumenta o ADC','Bloqueia o fluxo principal durante a espera','Desliga o GND','Remove a sequência'],1,'Durante delay(), o programa não executa as próximas verificações do loop.'],
+    ['tempo','No código do Simon Says, return após loseSequence() dentro de loop() faz:',['Finaliza o programa para sempre','Encerra a chamada atual de loop(); depois haverá nova chamada','Apaga o firmware','Volta ao começo do mesmo for'],1,'O framework chama loop() novamente, e gameStarted=false inicia outra partida.'],
+    ['simon','Com roundCounter = 0 e condição i <= roundCounter, quantos itens são mostrados?',['Nenhum','Um','Dois','Cinco'],1,'O laço executa uma vez, para i = 0.'],
+    ['simon','Qual intervalo de índices random(0, 4) produz no projeto?',['0 a 3','0 a 4','1 a 4','1 a 5'],0,'O limite superior é exclusivo, então os quatro resultados possíveis são 0, 1, 2 e 3.'],
+    ['simon','O jogador acerta uma rodada quando:',['Pressiona as cores em qualquer ordem','Repete cada item do prefixo na ordem esperada','Espera o timeout','Aperta qualquer botão cinco vezes'],1,'Cada pressedButton é comparado com buttonSequence[i], passo a passo.'],
+    ['simon','Após vencer cinco rodadas, o código:',['Para o microcontrolador','Executa winSequence() e prepara reinício','Apaga buttonSequence permanentemente','Troca GPIO dos LEDs'],1,'winSequence() sinaliza vitória e põe gameStarted=false para uma nova partida.'],
+    ['projeto','Por que o GND comum é importante entre controlador e driver?',['Para aumentar a frequência PWM','Para dar referência elétrica compartilhada aos sinais','Para substituir a fonte do motor','Para mudar o sentido do ADC'],1,'Sinais de controle precisam de uma referência comum de potencial para serem interpretados.'],
+    ['projeto','Qual procedimento é mais seguro antes de ligar o circuito físico do carro?',['Copiar a pinagem sem conferir','Conferir placa, níveis de tensão, fonte e ligações','Aplicar 5 V a todos os GPIOs','Acionar os motores sem driver'],1,'A documentação contém divergências; conferir datasheets e conexões evita falhas elétricas.'],
+    ['projeto','Se um botão lê valores instáveis mesmo parado, qual causa é plausível?',['Entrada flutuante por ausência de pull-up/pull-down','PWM de 8 bits','Array de 15 posições','Resistor em série com LED'],0,'Uma entrada sem nível definido pode variar com ruído; pull-up ou pull-down estabelece o repouso.'],
+    ['projeto','Qual sequência de testes ajuda a localizar falhas?',['Integrar tudo sem medir','Testar alimentação, cada entrada/saída e depois o sistema completo','Começar pelos motores sob carga máxima','Ignorar logs seriais'],1,'Testes incrementais isolam problemas de alimentação, pinagem, leitura e controle.']
+  ]
+};

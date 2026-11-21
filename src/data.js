@@ -1,3 +1,5 @@
+import { embeddedCourse } from './embedded.js';
+
 export const courses = {
   compiladores: {
     title: 'Compiladores', eyebrow: 'PROVA DE COMPILADORES', description: 'Da análise do programa-fonte ao código de máquina: revise cada etapa, entenda os algoritmos e treine com questões comentadas.', accent: 'coral',
@@ -144,7 +146,8 @@ export const courses = {
       ['cadastro','Qual alternativa representa o retorno esperado de um método simples de cadastro com PDO?',['return $sth->execute();','return $this->preco;','return $pdo->prepare;','return $_POST;'],0,'execute() informa se a instrução foi executada com sucesso; o método pode retornar esse booleano.'],
       ['cadastro','A ordem correta do fluxo PDO é:',['execute → prepare → bind','bind → execute → prepare','prepare → bind/parametrizar → execute','query → concatenar → execute'],2,'Primeiro se prepara a instrução, depois os valores são vinculados e só então ela é executada.']
     ]
-  }
+  },
+  embarcados: embeddedCourse
 };
 
 export const getQuestions = (course) => courses[course].questions.map((q, i) => ({ id: `${course}-${i}`, topic: q[0], prompt: q[1], options: q[2], correct: q[3], explanation: q[4] }));
