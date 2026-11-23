@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Analytics } from '@vercel/analytics/react';
 import { BookOpen, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Code2, Cpu, Database, FileCode2, GraduationCap, Layers3, Lightbulb, ListChecks, Menu, Play, RotateCcw, Search, Sparkles, Target, X, XCircle } from 'lucide-react';
 import { courses, getQuestions } from './data';
 import { deepDives } from './deepDive';
@@ -104,4 +105,4 @@ function App() {
   </div>;
 }
 function TopicIcon({i}) { return [<Layers3 size={24}/>,<Database size={24}/>,<Sparkles size={24}/>,<Code2 size={24}/>][i % 4]; }
-createRoot(document.getElementById('root')).render(<App/>);
+createRoot(document.getElementById('root')).render(<><App/><Analytics/></>);
