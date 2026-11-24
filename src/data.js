@@ -1,4 +1,5 @@
 import { embeddedCourse } from './embedded.js';
+import { realtimeCourse } from './realtime.js';
 
 export const courses = {
   compiladores: {
@@ -147,7 +148,8 @@ export const courses = {
       ['cadastro','A ordem correta do fluxo PDO é:',['execute → prepare → bind','bind → execute → prepare','prepare → bind/parametrizar → execute','query → concatenar → execute'],2,'Primeiro se prepara a instrução, depois os valores são vinculados e só então ela é executada.']
     ]
   },
-  embarcados: embeddedCourse
+  embarcados: embeddedCourse,
+  tempo_real: realtimeCourse
 };
 
 export const getQuestions = (course) => courses[course].questions.map((q, i) => ({ id: `${course}-${i}`, topic: q[0], prompt: q[1], options: q[2], correct: q[3], explanation: q[4] }));

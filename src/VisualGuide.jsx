@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, GitBranch, Layers3, Play } from 'lucide-react';
 import './visuals.css';
+import { RealtimeVisualGuide } from './RealtimeVisual';
 
 const flows = {
   compiladores: {
@@ -65,6 +66,7 @@ function FlowDemo({ data }) {
 }
 
 export function VisualGuide({ course, topic }) {
+  if (course === 'tempo_real') return <RealtimeVisualGuide topic={topic}/>;
   if (course === 'compiladores' && topic === 'yacc') return <ShiftReduceDemo key={topic}/>;
   if (course === 'compiladores' && topic === 'fluxo') return <CFGDemo/>;
   if (course === 'compiladores' && topic === 'registradores') return <InterferenceDemo/>;

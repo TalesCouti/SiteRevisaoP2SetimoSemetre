@@ -1,4 +1,5 @@
 // Exemplos resolvidos e comparações para os tópicos que mais se beneficiam de tabelas.
+import { realtimeExamples } from './realtimeExtras.js';
 export const lessonExamples = {
   compiladores: {
     projeto: { title: 'Uma instrução em cada fase', intro: 'Acompanhe a mesma atribuição ao longo do compilador.', headers: ['Fase', 'Produz', 'Exemplo'], rows: [['Léxica', 'Tokens', 'id(x), =, id(a), +, num(2)'], ['Sintática', 'Árvore', 'atribuição(x, soma(a, 2))'], ['Semântica', 'Tipos e escopos', 'a e x declarados; tipos compatíveis'], ['RI', 'Operações simples', 't1 = a + 2; x = t1'], ['Back-end', 'Instruções', 'LOAD, ADD, STORE (ilustrativo)']], code: 'x = a + 2;\n// RI: t1 = a + 2; x = t1', note: 'A tabela de símbolos registra nomes, tipos e escopos para várias fases.' },
@@ -24,5 +25,6 @@ export const lessonExamples = {
     tempo: { title: 'Linha do tempo de uma resposta', intro: 'A contagem recomeça a cada elemento que o jogador precisa repetir.', headers: ['Instante', 'Evento', 'Estado'], rows: [['t0', 'startTime = millis()', 'Início da espera'], ['t0 + 800 ms', 'Botão correto', 'Próximo elemento'], ['t0 + 2100 ms', 'Sem botão', 'Perda por timeout']], code: 'unsigned long inicio = millis();\nif (millis() - inicio > 2000) {\n  loseSequence(); return;\n}', note: 'O timeout é testado durante a espera; a implementação completa também verifica o botão pressionado.' },
     simon: { title: 'Prefixos de uma sequência', intro: 'Exemplo: vermelho → azul → verde.', headers: ['Rodada', 'roundCounter', 'Repetir'], rows: [['1', '0', 'vermelho'], ['2', '1', 'vermelho → azul'], ['3', '2', 'vermelho → azul → verde']], code: 'for (int i = 0; i <= roundCounter; i++) {\n  flashLED(buttonSequence[i]);\n}', note: 'Com roundCounter igual a zero, i <= roundCounter ainda executa uma vez.' },
     projeto: { title: 'Checklist de montagem', intro: 'A documentação exige conferência antes de montar o circuito físico.', headers: ['Verificação', 'Pergunta', 'Ação'], rows: [['Placa', 'UNO, ESP32 ou ESP32-S3?', 'Fixar modelo e pinagem'], ['ADC', 'Sinal excede o limite?', 'Medir/adaptar níveis'], ['Motores', 'Fonte suporta a carga?', 'Conferir tensão/corrente'], ['GND', 'Referência comum?', 'Revisar ligações']], code: 'placa → alimentação → sinais → testes isolados → integração', note: 'Uma simulação funcional não confirma por si só a compatibilidade elétrica da montagem.' }
-  }
+  },
+  tempo_real: realtimeExamples
 };
